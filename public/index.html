@@ -49,11 +49,17 @@
                 <!-- Key/values -->
                 <div id="keyValuePairs" class="mt-2"></div>
 
-                <button id="addKeyValuePairBtn" class="btn btn-success mt-2">+</button>
-                <button id="updateJsonBtn" class="btn btn-primary mt-2">Update Config</button>
-                <br /> <!-- replace with another row (and cols?)-->
-                <button id="copyModifiedJsonUrlBtn" class="btn btn-secondary mt-2"><i class="fa-solid fa-copy"></i> Copy modified.json URL</button>
-                <button id="exportModifiedJsonBtn" class="btn btn-secondary mt-2"><i class="fa-solid fa-save"></i> Export modified JSON</button>
+                <div class="d-grid gap-4">
+                    <div class="d-grid gap-2">
+                        <button id="addKeyValuePairBtn" class="btn btn-success">+</button>
+                        <button id="updateJsonBtn" class="btn btn-primary">Update Config</button>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button id="copyModifiedJsonUrlBtn" class="btn btn-secondary"><i class="fa-solid fa-copy"></i> Copy modified.json URL</button>
+                        <button id="exportModifiedJsonBtn" class="btn btn-secondary"><i class="fa-solid fa-save"></i> Export modified JSON</button>
+                    </div>
+                </div>
             </div>
 
             <!-- Right pane -->
