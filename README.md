@@ -4,7 +4,7 @@
 
 _Test data from https://randomuser.me/_
 
-Choose and edit a remote JSON file with jq-like syntex, then save it or host on the local network. Built with Express.
+Choose and edit a remote JSON file with standard dot-syntax, then save it or host on the local network. Built with Express.
 
 # Usage
 
