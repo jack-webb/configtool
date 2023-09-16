@@ -7,7 +7,7 @@ const fs = require('fs');
 const deepDiff = require('deep-diff');
 const fuse = require('fuse.js')
 
-const { getFileParameters, resolveConfigUrl } = require('./myresolve');
+const { getFileParameters, resolveConfigUrl } = require('./resolve');
 
 const app = express();
 app.use(bodyParser.json());
