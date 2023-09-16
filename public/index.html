@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>JSON Editor</title>
+    <link href="/node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <!-- Left pane -->
+            <div class="col-lg-4">
+                <h2>ConfigTool</h2>
+                <small><a href="https://github.com/jack-webb/configtool">https://github.com/jack-webb/configtool</a></small>
+                <br />
+                <i>Choose and edit a remote JSON file with jq-like syntax, then save it or host on the local network</i>
+                <h3>Usage</h3>
+                <ol>
+                    <li>Load your JSON file</li>
+                    <li>Make your modifications</li>
+                    <li>Access your changes at <a href="modified.json">/modified.json</a>, <i>or</i></li>
+                    <li>Export and save to a new file</li>
+                </ol>
+                <div class="row g-3">
+                    <div class="col">
+                        <select id="version" class="form-select"></select>
+                    </div>
+                    <div class="col">
+                        <select id="platform" class="form-select"></select>
+                    </div>
+                    <div class="col">
+                        <select id="variant" class="form-select"></select>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 mt-2">
+                    <button id="loadBaseBtn" class="btn btn-primary">Load Base JSON</button>
+                </div>
+
+                <div id="status" class="alert alert-secondary mt-2" role="alert">
+                  JSON Not Loaded
+                </div>
+
+                <hr />
+
+                <!-- Key/values -->
+                <div id="keyValuePairs" class="mt-2">
+    
+
+    <div class="col mb-2">
+      <div class="input-group">
+        <input type="text" class="key form-control" placeholder="Key">
+        <span class="input-group-text validation-icon">
+          <i class="fa-solid fa-ellipsis"></i>
+        </span>
+      </div>
+      <div class="input-group">
+        <input type="text" class="value form-control" placeholder="Value">
+        <span class="input-group-text bg-danger text-light delete-icon" style="cursor: pointer;">
+          <i class="fa-solid fa-trash"></i>
+        </span>
+      </div>
+      <small>This key points to an existing object:</small>
+      <small>This key will create a new object!</small>
+    </div>
+
+
+                </div>
+
+                <button id="addKeyValuePairBtn" class="btn btn-success mt-2">+</button>
+                <button id="updateJsonBtn" class="btn btn-primary mt-2">Update Config</button>
+                <br /> <!-- replace with another row (and cols?)-->
+                <button id="copyModifiedJsonUrlBtn" class="btn btn-secondary mt-2"><i class="fa-solid fa-copy"></i> Copy modified.json URL</button>
+                <button id="exportModifiedJsonBtn" class="btn btn-secondary mt-2"><i class="fa-solid fa-save"></i> Export modified JSON</button>
+            </div>
+
+            <!-- Right pane -->
+            <div class="col-lg-8">
+
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="modified-tab" data-bs-toggle="tab" data-bs-target="#modified" type="button" role="tab" aria-controls="modified" aria-selected="true">Preview</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="makechanges-tab" data-bs-toggle="tab" data-bs-target="#makechanges" type="button" role="tab" aria-controls="makechanges" aria-selected="false">makeChanges()</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="diff-tab" data-bs-toggle="tab" data-bs-target="#diff" type="button" role="tab" aria-controls="diff" aria-selected="false">Diff</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade show active" id="modified" role="tabpanel" aria-labelledby="modified-tab">
+                        <a id="openModifiedJsonBtn" style="padding-top: 6px; padding-right: 6px; float: right; cursor: pointer; font-size: 1.3em;"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                        <pre id="modifiedContent"></pre>
+                    </div>
+                    <div class="tab-pane fade" id="makechanges" role="tabpanel" aria-labelledby="makechanges-tab">
+                        <pre id="makeChangesContent"></pre>
+                    </div>
+                    <div class="tab-pane fade" id="diff" role="tabpanel" aria-labelledby="diff-tab">
+                        <table class="table">
+                            <thead>
+                              <tr>
+                                <th>Path</th>
+                                <th>Old Value</th>
+                                <th>New Value</th>
+                              </tr>
+                            </thead>
+                            <tbody id="diffContent">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://kit.fontawesome.com/dbb1822256.js" crossorigin="anonymous"></script>
+    <script src="/node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="/node_modules/lodash/lodash.min.js"></script>
+    <script src="/node_modules/bs5-utils/dist/js/Bs5Utils.js"></script>
+    <script type="module" src="/node_modules/@alenaksu/json-viewer/dist/json-viewer.bundle.js"></script>
+    
+    <script type="module" src="main.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,4 @@
+.validation-message json-viewer {
+  max-height: 200px;
+  overflow-y: auto;
+}
