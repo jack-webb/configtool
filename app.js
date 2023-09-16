@@ -7,7 +7,7 @@ const fs = require('fs');
 const deepDiff = require('deep-diff');
 const fuse = require('fuse.js')
 
-const { getFileParameters, resolveConfigUrl } = require('./resolve');
+const { getFileParameters, resolveConfigUrl } = require('./myresolve');
 
 const app = express();
 app.use(bodyParser.json());
@@ -69,12 +69,14 @@ app.post('/validateKey', (req, res) => {
   const { key } = req.body;
   const existingNode = _.get(baseJsonData, key, undefined);
   const isExisting = existingNode !== undefined;
+  res.json({ isExisting, existingNode });
+});
 
-  // Perform fuzzy search to find most likely targets
+app.post('/mostLikelyTargets', (req, res) => {
+  const { key } = req.body;
   const results = fuseInstance.search(key);
   const mostLikelyTargets = results.map(r => r.item.path).slice(0, 10);
-
-  res.json({ isExisting, existingNode, mostLikelyTargets });
+  res.json({ mostLikelyTargets });
 });
 
 app.post('/update', (req, res) => {

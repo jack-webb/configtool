@@ -1,11 +1,15 @@
+import * as Pairs from './pairs.js';
+import * as Api from './api.js';
+import * as Dropdowns from './dropdowns.js';
+
 export async function loadBase() {
   const queryParams = new URLSearchParams();
   document.querySelectorAll('.form-select').forEach(selectElement => {
     queryParams.append(selectElement.id, selectElement.value);
   });
 
-  const loadResponse = await fetch(`/loadConfigFile?${queryParams.toString()}`);
-  const data = await loadResponse.json();
+  const { data, status } = await Api.fetchLoadBase(queryParams);
+
   showToast(
     status === 400 ? 'Failed to Load JSON' : 'Loaded JSON successfully',
     status === 400 ? `Error: ${data.message}` : `JSON Loaded from <a href="${data.url}">${data.url}</a>`,
@@ -15,19 +19,6 @@ export async function loadBase() {
   document.getElementById('status').innerHTML = `You are modifying <a href="${data.url}">${data.url}</a>`;
   
   updateJson();
-}
-
-export async function fetchMostLikelyTargets(key) {
-  const response = await fetch('/validateKey', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ key })
-  });
-
-  const data = await response.json();
-  return data.mostLikelyTargets;
 }
 
 export function openModifiedJson() {
@@ -53,13 +44,7 @@ export async function updateJson() {
     return { key, value };
   });
 
-  await fetch('/update', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ keyValuePairs })
-  });
+  const status = await Api.updateJson(keyValuePairs);
 
   updateTabs();
 }
@@ -91,121 +76,6 @@ export async function exportModifiedJson() {
 }
 
 
-export function addKeyValuePair() {
-  const keyValuePairs = document.getElementById('keyValuePairs');
-  keyValuePairs.appendChild(createKeyValuePair());
-  updateDeleteButtonsVisibility();
-}
-
-export function createKeyValuePair() {
-  const pair = document.createElement('div');
-  pair.className = 'pair form-row';
-  const uniqueId = `collapseJsonTreePreview_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
-  
-  pair.innerHTML = `
-    <div class="col mb-2">
-      <div class="input-group">
-        <input type="text" class="key form-control" placeholder="Key">
-        <div class="autocomplete-dropdown" style="position: absolute; z-index: 1;"></div>
-        <span class="input-group-text validation-icon">
-          <i class="fa-solid fa-ellipsis"></i>
-        </span>
-      </div>
-      <div class="input-group">
-        <input type="text" class="value form-control" placeholder="Value">
-        <span class="input-group-text bg-danger text-light delete-icon" style="cursor: pointer;">
-          <i class="fa-solid fa-trash"></i>
-        </span>
-      </div>
-      
-      <p>
-        <a class="node-link expandable" data-bs-toggle="collapse" href="#${uniqueId}" role="button" aria-expanded="false" aria-controls="${uniqueId}">
-          
-        </a>
-      </p>
-      <div class="collapse collapseJsonTreePreview" id="${uniqueId}">
-        <div class="validation-message"></div>
-      </div>
-    </div>
-  `;
-
-  pair.querySelector('.delete-icon').addEventListener('click', function() {
-    pair.remove();
-    updateDeleteButtonsVisibility();
-  });
-
-  const nodeLinkElement = pair.querySelector('.node-link');
-  nodeLinkElement.addEventListener('click', function() {
-    const isExpanded = this.getAttribute('aria-expanded') === 'true';
-    this.setAttribute('aria-expanded', !isExpanded);
-    this.textContent = (isExpanded ? "▲ " : "▼ ") + this.textContent.split(' ').slice(1).join(' ');
-  });
-
-
-
-    // Probably needs debouncing, could combine with the other listener to reduce calls
-    const keyInput = pair.querySelector('.key');
-    const dropdown = pair.querySelector('.autocomplete-dropdown');
-
-    keyInput.addEventListener('input', async function() {
-      const mostLikelyTargets = await fetchMostLikelyTargets(this.value);
-      dropdown.innerHTML = mostLikelyTargets.map(target => `<div>${target}</div>`).join('');
-
-      dropdown.addEventListener('click', function(e) {
-        if (e.target.tagName === 'DIV') {
-          keyInput.value = e.target.textContent;
-          dropdown.innerHTML = '';
-        }
-      });
-    });
-
-    
-
-  return pair;
-}
-
-
-export async function validateKey(inputElement) {
-  const key = inputElement.value;
-  
-  const mostLikelyTargets = await fetchMostLikelyTargets(key);
-
-  const response = await fetch('/validateKey', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ key })
-  });
-
-  const data = await response.json();
-
-  if (data.isExisting) {
-    const jsonViewer = document.createElement('json-viewer');
-    jsonViewer.data = data.existingNode;
-    setKeyValidationMessage(inputElement, jsonViewer)
-  } else {
-    setKeyValidationMessage(inputElement, "This key will create a new object")
-  }
-}
-
-const debouncedValidateKey = _.debounce(validateKey, 100);
-export { debouncedValidateKey };
-
-export function updateDeleteButtonsVisibility() {
-  const keyValuePairs = document.getElementById('keyValuePairs');
-  const pairs = keyValuePairs.querySelectorAll('.pair');
-  if (pairs.length <= 1) {
-    pairs.forEach(pair => {
-      pair.querySelector('.delete-icon').style.display = 'none';
-    });
-  } else {
-    pairs.forEach(pair => {
-      pair.querySelector('.delete-icon').style.display = 'inline';
-    });
-  }
-}
-
 // todo import Bs5Utils here instead of index.html
 export function showToast(title, content, type) {
   const bs5Utils = new Bs5Utils();
@@ -222,38 +92,8 @@ export function showToast(title, content, type) {
   });
 }
 
-export function setKeyValidationMessage(inputElement, innerContent) {
-  const messageElement = inputElement.closest('.col').querySelector('.validation-message');
-  const nodeLinkElement = inputElement.closest('.col').querySelector('.node-link');
-  
-  if (messageElement) {
-    if (typeof innerContent === 'string') {
-      messageElement.innerHTML = innerContent;
-    } else {
-      messageElement.innerHTML = '';
-      messageElement.appendChild(innerContent);
-    }
-
-    if (nodeLinkElement) {
-      const isExpanded = nodeLinkElement.getAttribute('aria-expanded') === 'true';
-      const arrow = isExpanded ? "▲ " : "▼ ";
-      nodeLinkElement.textContent = arrow + (innerContent === "This key will create a new object" ? "This will create a new node" : "This will modify an existing node");
-    }
-  } else {
-    const newMessageElement = document.createElement('div');
-    newMessageElement.className = 'validation-message';
-    if (typeof innerContent === 'string') {
-      newMessageElement.innerHTML = innerContent;
-    } else {
-      newMessageElement.appendChild(innerContent);
-    }
-    inputElement.closest('.col').appendChild(newMessageElement);
-  }
-}
-
 export async function populateDropdowns() {
-  const response = await fetch('/fileParameters');
-  const data = await response.json();
+  const data = await Api.fetchFileParameters();
   const dropdownContainer = document.querySelector('.row.g-3');
 
   dropdownContainer.innerHTML = '';
