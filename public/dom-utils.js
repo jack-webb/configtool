@@ -1,22 +1,3 @@
-export function createDropdown(key, values, container) {
-  const colDiv = document.createElement('div');
-  colDiv.className = 'col';
-
-  const selectElement = document.createElement('select');
-  selectElement.id = key;
-  selectElement.className = 'form-select';
-
-  values.forEach(v => {
-    const optionElement = document.createElement('option');
-    optionElement.value = v;
-    optionElement.textContent = v;
-    selectElement.appendChild(optionElement);
-  });
-
-  colDiv.appendChild(selectElement);
-  container.appendChild(colDiv);
-}
-
 export async function loadBase() {
   const queryParams = new URLSearchParams();
   document.querySelectorAll('.form-select').forEach(selectElement => {
@@ -34,6 +15,19 @@ export async function loadBase() {
   document.getElementById('status').innerHTML = `You are modifying <a href="${data.url}">${data.url}</a>`;
   
   updateJson();
+}
+
+export async function fetchMostLikelyTargets(key) {
+  const response = await fetch('/validateKey', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ key })
+  });
+
+  const data = await response.json();
+  return data.mostLikelyTargets;
 }
 
 export function openModifiedJson() {
@@ -97,42 +91,6 @@ export async function exportModifiedJson() {
 }
 
 
-export async function validateKey(inputElement) {
-  const key = inputElement.value;
-  const response = await fetch('/validateKey', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ key })
-  });
-
-  const data = await response.json();
-
-  if (data.isExisting) {
-    const jsonViewer = document.createElement('json-viewer');
-    jsonViewer.data = data.existingNode;
-    setKeyValidationMessage(inputElement, jsonViewer)
-  } else {
-    setKeyValidationMessage(inputElement, "This key will create a new object")
-  }
-}
-
-const debouncedValidateKey = _.debounce(validateKey, 100);
-export { debouncedValidateKey };
-
-export async function populateDropdowns() {
-  const response = await fetch('/fileParameters');
-  const data = await response.json();
-  const dropdownContainer = document.querySelector('.row.g-3');
-
-  dropdownContainer.innerHTML = '';
-
-  Object.keys(data).forEach(key => {
-    createDropdown(key, data[key], dropdownContainer);
-  });
-}
-
 export function addKeyValuePair() {
   const keyValuePairs = document.getElementById('keyValuePairs');
   keyValuePairs.appendChild(createKeyValuePair());
@@ -148,6 +106,7 @@ export function createKeyValuePair() {
     <div class="col mb-2">
       <div class="input-group">
         <input type="text" class="key form-control" placeholder="Key">
+        <div class="autocomplete-dropdown" style="position: absolute; z-index: 1;"></div>
         <span class="input-group-text validation-icon">
           <i class="fa-solid fa-ellipsis"></i>
         </span>
@@ -182,8 +141,56 @@ export function createKeyValuePair() {
     this.textContent = (isExpanded ? "▲ " : "▼ ") + this.textContent.split(' ').slice(1).join(' ');
   });
 
+
+
+    // Probably needs debouncing, could combine with the other listener to reduce calls
+    const keyInput = pair.querySelector('.key');
+    const dropdown = pair.querySelector('.autocomplete-dropdown');
+
+    keyInput.addEventListener('input', async function() {
+      const mostLikelyTargets = await fetchMostLikelyTargets(this.value);
+      dropdown.innerHTML = mostLikelyTargets.map(target => `<div>${target}</div>`).join('');
+
+      dropdown.addEventListener('click', function(e) {
+        if (e.target.tagName === 'DIV') {
+          keyInput.value = e.target.textContent;
+          dropdown.innerHTML = '';
+        }
+      });
+    });
+
+    
+
   return pair;
 }
+
+
+export async function validateKey(inputElement) {
+  const key = inputElement.value;
+  
+  const mostLikelyTargets = await fetchMostLikelyTargets(key);
+
+  const response = await fetch('/validateKey', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ key })
+  });
+
+  const data = await response.json();
+
+  if (data.isExisting) {
+    const jsonViewer = document.createElement('json-viewer');
+    jsonViewer.data = data.existingNode;
+    setKeyValidationMessage(inputElement, jsonViewer)
+  } else {
+    setKeyValidationMessage(inputElement, "This key will create a new object")
+  }
+}
+
+const debouncedValidateKey = _.debounce(validateKey, 100);
+export { debouncedValidateKey };
 
 export function updateDeleteButtonsVisibility() {
   const keyValuePairs = document.getElementById('keyValuePairs');
@@ -242,6 +249,37 @@ export function setKeyValidationMessage(inputElement, innerContent) {
     }
     inputElement.closest('.col').appendChild(newMessageElement);
   }
+}
+
+export async function populateDropdowns() {
+  const response = await fetch('/fileParameters');
+  const data = await response.json();
+  const dropdownContainer = document.querySelector('.row.g-3');
+
+  dropdownContainer.innerHTML = '';
+
+  Object.keys(data).forEach(key => {
+    createDropdown(key, data[key], dropdownContainer);
+  });
+}
+
+export function createDropdown(key, values, container) {
+  const colDiv = document.createElement('div');
+  colDiv.className = 'col';
+
+  const selectElement = document.createElement('select');
+  selectElement.id = key;
+  selectElement.className = 'form-select';
+
+  values.forEach(v => {
+    const optionElement = document.createElement('option');
+    optionElement.value = v;
+    optionElement.textContent = v;
+    selectElement.appendChild(optionElement);
+  });
+
+  colDiv.appendChild(selectElement);
+  container.appendChild(colDiv);
 }
 
 export function updateJsonTree(json) {
