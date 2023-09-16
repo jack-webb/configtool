@@ -2,3 +2,12 @@
   max-height: 200px;
   overflow-y: auto;
 }
+
+.full-height {
+  height: 100vh;
+  overflow-y: auto;
+}
+
+#openModifiedJsonBtn {
+  padding-top: 6px; padding-right: 6px; float: right; cursor: pointer; font-size: 1.3em;
+}

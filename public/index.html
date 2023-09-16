@@ -9,11 +9,11 @@
 </head>
 
 <body>
-    <div class="container-fluid mt-4">
+    <div class="container-fluid full-height">
         <div class="row">
             <!-- Left pane -->
-            <div class="col-lg-4">
-                <h2>ConfigTool</h2>
+            <div class="col-lg-4 full-height">
+                <h2 class="mt-2">ConfigTool</h2>
                 <small><a href="https://github.com/jack-webb/configtool">https://github.com/jack-webb/configtool</a></small>
                 <br />
                 <i>Choose and edit a remote JSON file with jq-like syntax, then save it or host on the local network</i>
@@ -63,9 +63,8 @@
             </div>
 
             <!-- Right pane -->
-            <div class="col-lg-8">
-
-                <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <div class="col-lg-8 full-height">
+                <ul class="nav nav-tabs mt-2" id="myTab" role="tablist">
                     <li class="nav-item" role="presentation">
                         <button class="nav-link active" id="modified-tab" data-bs-toggle="tab" data-bs-target="#modified" type="button" role="tab" aria-controls="modified" aria-selected="true">Preview</button>
                     </li>
@@ -79,7 +78,7 @@
 
                 <div class="tab-content" id="myTabContent">
                     <div class="tab-pane fade show active" id="modified" role="tabpanel" aria-labelledby="modified-tab">
-                        <a id="openModifiedJsonBtn" style="padding-top: 6px; padding-right: 6px; float: right; cursor: pointer; font-size: 1.3em;"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                        <a id="openModifiedJsonBtn"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
                         <pre id="modifiedContent"></pre>
                     </div>
                     <div class="tab-pane fade" id="makechanges" role="tabpanel" aria-labelledby="makechanges-tab">
